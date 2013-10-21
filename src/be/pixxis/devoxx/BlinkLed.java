@@ -1,7 +1,7 @@
 package be.pixxis.devoxx;
 
 
-import com.pi4j.io.gpio.*;
+import com.pi4j.io.gpio.GpioPinDigitalOutput;
 
 /**
  * @author Gert Leenders
