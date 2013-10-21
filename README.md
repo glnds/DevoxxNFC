@@ -3,7 +3,7 @@ Application for NFC tag scanning
 
 ## Target Platform
 
-The target platform to run this application is the **Raspberry Pi**. Certain functionalitty (linked to GPIO) will only
+The target platform to run this application is the **Raspberry Pi**. Certain functionality (linked to GPIO) will only
 work on that platform.
 
 ##Depencencies
