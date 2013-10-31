@@ -56,7 +56,7 @@ public class NFCScanner {
 
         //TODO add server ip
 
-        options.addOption("l", "leds", false, "enables debugging leds.");
+        options.addOption("l", "leds", false, "enables debugging leds");
 
         Platform platform = Platform.RASPBERRY_PI;
 
