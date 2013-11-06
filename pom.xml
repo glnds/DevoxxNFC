@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <scm>
-        <connection>scm:git:https://github.com/glnds/DevoxxNFC.gitt</connection>
+        <connection>scm:git:https://github.com/glnds/DevoxxNFC.git</connection>
     </scm>
 
     <properties>
@@ -21,19 +21,6 @@
 
     <build>
         <finalName>DevoxxNFC</finalName>
-        <resources>
-            <resource>
-                <directory>src/main/resources/</directory>
-                <includes>
-                    <include>**/*.*</include>
-                </includes>
-            </resource>
-        </resources>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-            </testResource>
-        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -76,26 +63,53 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.2.1</version>
+                <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-
+                    <archive>
+                        <manifest>
+                            <mainClass>be.pixxis.devoxx.NFCScanner</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.dstovall</groupId>
+                <artifactId>onejar-maven-plugin</artifactId>
+                <version>1.4.4</version>
                 <executions>
                     <execution>
-                        <id>assemble-all</id>
-                        <phase>package</phase>
+                        <configuration>
+                            <!-- Optional -->
+                            <onejarVersion>0.97</onejarVersion>
+                            <!-- Optional, use only if you need to include native libraries (dll's) -->
+                            <!--<binlibs>-->
+                                <!--<fileSet>-->
+                                    <!--<directory>${project.build.directory}/dllextract</directory>-->
+                                    <!--<includes>-->
+                                        <!--<include>test.dll</include>-->
+                                    <!--</includes>-->
+                                <!--</fileSet>-->
+                            <!--</binlibs>-->
+                            <!-- Optional, default is false -->
+                            <attachToBuild>true</attachToBuild>
+                            <!-- Optional, default is "onejar" -->
+                            <classifier>onejar</classifier>
+                        </configuration>
                         <goals>
-                            <goal>single</goal>
+                            <goal>one-jar</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>onejar-maven-plugin.googlecode.com</id>
+            <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
+        </pluginRepository>
+    </pluginRepositories>
 
 
     <dependencies>
