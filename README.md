@@ -46,3 +46,8 @@ usage: DevoxxNFC<br />
 ## References
 http://teaandterminals.blogspot.co.uk/2012/11/rabbit-pi.html
 
+https://code.google.com/p/boblight/
+https://github.com/adammhaile/RPi-LPD8806
+https://github.com/Sh4d/LPD8806
+http://learn.adafruit.com/light-painting-with-raspberry-pi/overview
+

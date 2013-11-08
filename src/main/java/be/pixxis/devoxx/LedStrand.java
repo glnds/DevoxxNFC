@@ -10,19 +10,23 @@ public class LedStrand {
     private final static byte[] GAMMA = new byte[256];
     private int numberOfLeds;
     private RGBLed[] strand;
+    private float brightness;
 
     static {
         for (int i = 0; i < 256; i++) {
-            int j = (int) (Math.pow((float) i / 255.0, 2.5) * 127.0 + 0.5);
-            GAMMA[i] = (byte) (0x80 | j);
-            System.out.println(GAMMA[i]);
+            int j = (int) (Math.pow(((float) i) / 255.0, 2.5) * 127.0 + 0.5);
+            GAMMA[i] = (byte)( 0x80 | j);
         }
     }
 
 
-    public LedStrand(final int numberOfLeds) {
+    public LedStrand(final int numberOfLeds, final float brightness) throws IllegalArgumentException {
+        if (brightness < 0 || brightness > 1.0) {
+            throw new IllegalArgumentException("Brightness must be between 0.0 and 1.0");
+        }
         this.numberOfLeds = numberOfLeds;
         this.strand = new RGBLed[numberOfLeds];
+        this.brightness = brightness;
     }
 
     public static void main(String[] args) {
@@ -34,23 +38,23 @@ public class LedStrand {
             return;
         }
 
-        LedStrand s = new LedStrand(10);
+        LedStrand s = new LedStrand(12, 0.3F);
 
         while (true) {
 
             try {
 
-                s.fill(128, 255, 128);
+                s.fill(0, 255, 0);
                 s.update();
 
                 Thread.sleep(1000);
 
-                s.fill(128, 128, 255);
+                s.fill(0, 0, 255);
                 s.update();
 
                 Thread.sleep(1000);
 
-                s.fill(255, 128, 128);
+                s.fill(255, 0, 0);
                 s.update();
 
                 Thread.sleep(1000);
@@ -71,7 +75,7 @@ public class LedStrand {
         fill(red, green, blue, 0, 0);
     }
 
-    public void fill(final int red, final int green, final int blue, final int start, final int end) {
+    public void fill(final int red, final int green, final int blue, final int start, final int end) throws IllegalArgumentException {
         int endLed = end;
 
         if (red < 0 || green < 0 || blue < 0 || red > 255 || green > 255 || blue > 255) {
@@ -87,7 +91,8 @@ public class LedStrand {
         }
 
         for (int i = start; i < endLed; i++) {
-            strand[i] = new RGBLed(GAMMA[red], GAMMA[green], GAMMA[blue]);
+            strand[i] = new RGBLed(GAMMA[(int) (red * this.brightness)], GAMMA[(int) (green * this.brightness)],
+                    GAMMA[(int) (blue * this.brightness)]);
         }
 
     }
@@ -101,12 +106,12 @@ public class LedStrand {
             packet[(i * 3) + 2] = strand[i].getBlue();
         }
 
-        // Update strab
+        // Update the strand
         Spi.wiringPiSPIDataRW(0, packet, this.numberOfLeds * 3);
 
         byte endPacket[] = {(byte) 0x00};
 
-        // Flush update
+        // Flush the update
         Spi.wiringPiSPIDataRW(0, endPacket, 1);
 
     }
