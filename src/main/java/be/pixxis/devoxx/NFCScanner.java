@@ -184,6 +184,7 @@ public class NFCScanner {
                                 }
                             }
 
+                            //yield?
                             Thread.sleep(250);
                         } catch (InterruptedException e) {
                             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

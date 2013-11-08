@@ -67,7 +67,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>be.pixxis.devoxx.NFCScanner</mainClass>
+                            <mainClass>be.pixxis.devoxx.LedStrand</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
