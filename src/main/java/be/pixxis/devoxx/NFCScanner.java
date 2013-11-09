@@ -5,10 +5,6 @@ import be.pixxis.devoxx.led.MainAnimation;
 import be.pixxis.devoxx.messaging.MessageConsumer;
 import be.pixxis.devoxx.messaging.PersistMessageThread;
 import be.pixxis.devoxx.types.Platform;
-import com.pi4j.io.gpio.GpioController;
-import com.pi4j.io.gpio.GpioFactory;
-import com.pi4j.io.gpio.GpioPinDigitalOutput;
-import com.pi4j.io.gpio.RaspiPin;
 import com.pi4j.wiringpi.Spi;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -137,10 +133,7 @@ public class NFCScanner {
         //TODO only enable leds in debug mode.
         //TODO Clean up code
         //TODO add logger
-        final GpioController gpio = GpioFactory.getInstance();
-        final GpioPinDigitalOutput led = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00);
-        final GpioPinDigitalOutput ledEnQueue = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01);
-        final GpioPinDigitalOutput ledDequeue = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_06);
+
 
 
         // Initialize Rabbit MQ connection
@@ -184,11 +177,11 @@ public class NFCScanner {
                 rabbitChannel.queueDeclare(NFC_QUEUE, false, false, false, null);
 
                 // Start a thread to move message from a non persistent queue to a durable que.
-                (new Thread(new PersistMessageThread(rabbitConnection, ledDequeue))).start();
+                (new Thread(new PersistMessageThread(rabbitConnection))).start();
 
 
                 // Start a thread to consume the durable messages.
-                (new Thread(new MessageConsumer(rabbitConnection, ledDequeue))).start();
+                (new Thread(new MessageConsumer(rabbitConnection))).start();
             }
 
             // Initialize the NFC terminals.

@@ -2,7 +2,6 @@ package be.pixxis.devoxx.messaging;
 
 
 import be.pixxis.devoxx.NFCScanner;
-import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.MessageProperties;
@@ -16,12 +15,10 @@ import java.io.IOException;
 public class PersistMessageThread implements Runnable {
 
     private QueueingConsumer consumer;
-    private GpioPinDigitalOutput ledDequeue;
     private Channel channel;
 
-    public PersistMessageThread(final Connection connection, final GpioPinDigitalOutput ledDequeue) {
+    public PersistMessageThread(final Connection connection) {
         try {
-            this.ledDequeue = ledDequeue;
 
             this.channel = connection.createChannel();
             channel.queueDeclare(NFCScanner.NFC_QUEUE, false, false, false, null);
