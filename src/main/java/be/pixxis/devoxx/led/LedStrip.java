@@ -188,16 +188,16 @@ public final class LedStrip {
 
     public void animateUpVote() throws InterruptedException {
         allOff();
-        setLed(4, 0, 0, 255, 0.6F);
-        setLed(3, 127, 0, 255, 0.6F);
-        setLed(2, 255, 0, 255, 0.6F);
-        setLed(1, 255,0, 127, 0.6F);
+        setLed(1, 0, 0, 255, 0.6F);
+        setLed(2, 127, 0, 255, 0.6F);
+        setLed(3, 255, 0, 255, 0.6F);
+        setLed(4, 255,0, 127, 0.6F);
         update();
         Thread.sleep(350);
     }
 
     public void animateDownVote() throws InterruptedException {
-        //allOff();
+        allOff();
         setLed(12, 0, 0, 255, 0.6F);
         setLed(11, 127, 0, 255, 0.6F);
         setLed(10, 255, 0, 255, 0.6F);
@@ -206,7 +206,7 @@ public final class LedStrip {
         Thread.sleep(350);
     }
 
-    public void animateFavorit() throws InterruptedException {
+    public void animateFavorite() throws InterruptedException {
         allOff();
         setLed(5, 0, 0, 255, 0.5F);
         setLed(8, 0, 0, 255, 0.5F);

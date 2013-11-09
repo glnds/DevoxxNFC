@@ -13,15 +13,15 @@ import com.pi4j.wiringpi.Spi;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.MessageProperties;
 import org.apache.commons.cli.*;
 
-import javax.smartcardio.*;
+import javax.smartcardio.CardException;
+import javax.smartcardio.CardTerminal;
+import javax.smartcardio.CardTerminals;
+import javax.smartcardio.TerminalFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -40,7 +40,7 @@ public class NFCScanner {
      */
     public static void main(String[] args) {
 
-        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+        // Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
         final CommandLineParser parser = new GnuParser();
 
@@ -123,7 +123,6 @@ public class NFCScanner {
             System.exit(0);
         }
 
-
         NFC_PERSISTENT_QUEUE = "nfc_scans_pers_room_" + ROOM_NUMBER;
         NFC_QUEUE = "nfc_scans_room_" + ROOM_NUMBER;
 
@@ -201,70 +200,21 @@ public class NFCScanner {
 
             if (terminals != null) {
 
-                final List<CardChannel> channels = initializeTerminals(terminals);
+                try {
+                    log(terminals.list().size() + " terminal(s) found...");
+                } catch (CardException e) {
+                    log("No terminals found! Exit!");
+                    System.exit(0);
+                }
 
-                // Main loop
-                while (true) {
+                // Open a channel for every terminal.
+                for (CardTerminal cardTerminal : terminals.list()) {
+                    log(cardTerminal.toString());
 
-                    for (CardChannel channel : channels) {
-                        try {
-                            ResponseAPDU response;
-                            response = channel.transmit(new CommandAPDU(new byte[]{
-                                    (byte) 0xff, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06,  // 122
-                                    (byte) 0xD4, (byte) 0x60,
-                                    (byte) 0x01, (byte) 0x01,
-                                    (byte) 0x00, (byte) 0x20, (byte) 0x40  // MiFare ,ISO/A, DEP
-                            }));
-                            byte[] buffer = response.getBytes();
-
-                            if (buffer[2] == (byte) 0x01) {
-                                byte[] ID = new byte[4];
-                                ID[0] = buffer[10];
-                                ID[1] = buffer[11];
-                                ID[2] = buffer[12];
-                                ID[3] = buffer[13];
-
-                                final String id = hex2String(ID);
-                                log("Scanned ID: " + id);
-
-                                if (mainAnimation != null) {
-                                    mainAnimation.suspendUpdates(true);
-                                }
-                                //ledStrip.animateUpVote();
-                                //ledStrip.animateDownVote();
-                                ledStrip.animateFavorit();
-
-
-                                if (mainAnimation != null) {
-                                    mainAnimation.suspendUpdates(false);
-                                }
-
-
-//                                if (ENABLE_LEDS) {
-//                                    led.pulse(100);
-//                                }100
-
-                                // Non persistent message
-                                if (MESSAGING_ENABLED) {
-                                    rabbitChannel.basicPublish("", NFC_QUEUE, MessageProperties.TEXT_PLAIN, id.getBytes());
-                                    log("ID: " + id + " enqueued on NON persistent queue.");
-                                }
-
-//                                if (ENABLE_LEDS) {
-//                                    ledEnQueue.pulse(100);
-//                                }
-                            }
-
-                            //yield?
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                        } catch (CardException e) {
-                            e.printStackTrace();
-                        } catch (IOException ioe) {
-                            ioe.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                        }
-                    }
+                    final Terminal terminal = new Terminal(cardTerminal, mainAnimation, ledStrip);
+                    final Thread terminalThread = new Thread(terminal);
+                    terminalThread.setPriority(Thread.MAX_PRIORITY);
+                    terminalThread.start();
                 }
 
             } else {
@@ -276,51 +226,6 @@ public class NFCScanner {
         } catch (CardException e) {
             e.printStackTrace();
         }
-    }
-
-    private static List<CardChannel> initializeTerminals(final CardTerminals terminals) throws CardException {
-        try {
-            log(terminals.list().size() + " terminal(s) found...");
-        } catch (CardException e) {
-            log("No terminals found! Exit!");
-            System.exit(0);
-        }
-        // Initialize the terminal channels.
-        final List<CardChannel> channels = new ArrayList<CardChannel>();
-
-        // Open a channel for every terminal.
-        for (CardTerminal cardTerminal : terminals.list()) {
-            log(cardTerminal.toString());
-
-            final Card card = cardTerminal.connect("*");
-            channels.add(card.getBasicChannel());
-        }
-
-        // Initialize the readers through their channel.
-        for (CardChannel channel : channels) {
-            final int channelNr = channel.getChannelNumber();
-
-            // Configure the readers.
-            channel.transmit(new CommandAPDU(new byte[]{
-                    (byte) 0xff, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06,  // 122
-                    (byte) 0xD4, (byte) 0x32,
-                    (byte) 0x05,
-                    (byte) 0x00, (byte) 0x00, (byte) 0x50
-            }));
-            log("Channel: " + channelNr + " initialized.");
-
-            // SERIAL ID
-            ResponseAPDU response = channel.transmit(new CommandAPDU(new byte[]{(byte) 0x80, (byte) 0x14, (byte) 0x00, (byte) 0x00,
-                    (byte) 0x08})); // Random Nr from ACOS6
-            log("Channel: " + channelNr + ", serial response: " + hex2String(response.getBytes()));
-
-            // CARD ID
-            response = channel.transmit(new CommandAPDU(new byte[]{(byte) 0x80, (byte) 0x14, (byte) 0x04, (byte) 0x00,
-                    (byte) 0x06})); // Random Nr from ACOS6
-            log("Channel: " + channelNr + ", card response: " + hex2String(response.getBytes()));
-        }
-
-        return channels;
     }
 
     private static void initializePcsclite(final Platform platform) throws FileNotFoundException {
@@ -341,11 +246,11 @@ public class NFCScanner {
         }
     }
 
-    private static void log(final String string) {
+    public static void log(final String string) {
         System.out.println(">> " + string);
     }
 
-    private static String hex2String(byte[] b) {
+        public static String hex2String(byte[] b) {
         String result = "";
         for (byte by : b) {
             result += String.format("%02X", by);
