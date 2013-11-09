@@ -135,7 +135,6 @@ public class NFCScanner {
         //TODO add logger
 
 
-
         // Initialize Rabbit MQ connection
         final ConnectionFactory rabbitConnectionFactory = new ConnectionFactory();
         rabbitConnectionFactory.setHost("localhost");
@@ -178,7 +177,6 @@ public class NFCScanner {
 
                 // Start a thread to move message from a non persistent queue to a durable que.
                 (new Thread(new PersistMessageThread(rabbitConnection))).start();
-
 
                 // Start a thread to consume the durable messages.
                 (new Thread(new MessageConsumer(rabbitConnection))).start();
@@ -243,7 +241,7 @@ public class NFCScanner {
         System.out.println(">> " + string);
     }
 
-        public static String hex2String(byte[] b) {
+    public static String hex2String(byte[] b) {
         String result = "";
         for (byte by : b) {
             result += String.format("%02X", by);
