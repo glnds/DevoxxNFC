@@ -1,11 +1,23 @@
-package be.pixxis.devoxx.led;
-
-/**
- * Created with IntelliJ IDEA.
- * User: glnd
- * Date: 09/11/13
- * Time: 12:00
- * To change this template use File | Settings | File Templates.
- */
-public class ScanAnimationThread {
-}
+//package be.pixxis.devoxx.led;
+//
+///**
+// * @author Gert Leenders
+// */
+//public class ScanAnimationThread {
+//    private LedStrip ledStrip;
+//
+//    public ScanAnimationThread(final int numberOfLeds, final float brightness) {
+//        ledStrip = new LedStrip(numberOfLeds, brightness);
+//    }
+//
+//    @Override
+//    public void run() {
+//        while (true) {
+//            try {
+//                ledStrip.setLed(1,255,51, 153, 0.6F);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//            }
+//        }
+//    }
+//}

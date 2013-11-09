@@ -10,6 +10,7 @@ public final class LedStrip {
     private int numberOfLeds;
     private RGBLed[] ledBuffer;
     private float brightness;
+    private boolean suspendUpdates = false;
 
     public LedStrip(final int numberOfLeds, final float brightness) throws IllegalArgumentException {
         if (brightness < 0 || brightness > 1.0) {
@@ -22,6 +23,10 @@ public final class LedStrip {
         }
 
         this.brightness = brightness;
+    }
+
+    public void setSuspendUpdates(boolean suspendUpdates) {
+        this.suspendUpdates = suspendUpdates;
     }
 
     public void allOff() {
@@ -78,6 +83,9 @@ public final class LedStrip {
     }
 
     public void update() {
+        if (suspendUpdates) {
+            return;
+        }
         final byte packet[] = new byte[numberOfLeds * 3];
 
         for (int i = 0; i < numberOfLeds; i++) {
@@ -176,5 +184,35 @@ public final class LedStrip {
             update();
             Thread.sleep(100);
         }
+    }
+
+    public void animateUpVote() throws InterruptedException {
+        allOff();
+        setLed(4, 0, 0, 255, 0.6F);
+        setLed(3, 127, 0, 255, 0.6F);
+        setLed(2, 255, 0, 255, 0.6F);
+        setLed(1, 255,0, 127, 0.6F);
+        update();
+        Thread.sleep(350);
+    }
+
+    public void animateDownVote() throws InterruptedException {
+        //allOff();
+        setLed(12, 0, 0, 255, 0.6F);
+        setLed(11, 127, 0, 255, 0.6F);
+        setLed(10, 255, 0, 255, 0.6F);
+        setLed(9, 255,0, 127, 0.6F);
+        update();
+        Thread.sleep(350);
+    }
+
+    public void animateFavorit() throws InterruptedException {
+        allOff();
+        setLed(5, 0, 0, 255, 0.5F);
+        setLed(8, 0, 0, 255, 0.5F);
+        setLed(6, 127, 0, 255, 0.5F);
+        setLed(7, 127, 0, 255, 0.5F);
+        update();
+        Thread.sleep(350);
     }
 }

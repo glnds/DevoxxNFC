@@ -3,12 +3,16 @@ package be.pixxis.devoxx.led;
 /**
  * @author Gert Leenders
  */
-public final class AnimationThread implements Runnable {
+public final class MainAnimation implements Runnable {
 
     private LedStrip ledStrip;
 
-    public AnimationThread(final int numberOfLeds, final float brightness) {
+    public MainAnimation(final int numberOfLeds, final float brightness) {
         ledStrip = new LedStrip(numberOfLeds, brightness);
+    }
+
+    public void suspendUpdates(final boolean suspend) {
+        ledStrip.setSuspendUpdates(suspend);
     }
 
     @Override

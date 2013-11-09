@@ -1,7 +1,7 @@
 package be.pixxis.devoxx;
 
-import be.pixxis.devoxx.led.AnimationThread;
 import be.pixxis.devoxx.led.LedStrip;
+import be.pixxis.devoxx.led.MainAnimation;
 import be.pixxis.devoxx.messaging.MessageConsumer;
 import be.pixxis.devoxx.messaging.PersistMessageThread;
 import be.pixxis.devoxx.types.Platform;
@@ -168,10 +168,13 @@ public class NFCScanner {
         }
 
         // Start led animation
+        MainAnimation mainAnimation = null;
+        Thread mainAnimationThread = null;
         if (!DEBUG_MODE) {
-            final Thread ledStripAnimationThread = new Thread(new AnimationThread(12, 0.5F));
-            ledStripAnimationThread.setPriority(Thread.MIN_PRIORITY);
-            ledStripAnimationThread.start();
+            mainAnimation = new MainAnimation(12, 0.5F);
+            mainAnimationThread = new Thread(mainAnimation);
+            mainAnimationThread.setPriority(Thread.MIN_PRIORITY);
+            mainAnimationThread.start();
         }
 
         try {
@@ -223,6 +226,20 @@ public class NFCScanner {
 
                                 final String id = hex2String(ID);
                                 log("Scanned ID: " + id);
+
+                                if (mainAnimation != null) {
+                                    mainAnimation.suspendUpdates(true);
+                                }
+                                //ledStrip.animateUpVote();
+                                //ledStrip.animateDownVote();
+                                ledStrip.animateFavorit();
+
+
+                                if (mainAnimation != null) {
+                                    mainAnimation.suspendUpdates(false);
+                                }
+
+
 //                                if (ENABLE_LEDS) {
 //                                    led.pulse(100);
 //                                }100
