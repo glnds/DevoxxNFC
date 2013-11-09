@@ -67,7 +67,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>be.pixxis.devoxx.LedStrand</mainClass>
+                            <mainClass>be.pixxis.devoxx.led.LedStrip</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

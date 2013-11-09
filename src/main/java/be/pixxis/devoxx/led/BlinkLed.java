@@ -1,4 +1,4 @@
-package be.pixxis.devoxx;
+package be.pixxis.devoxx.led;
 
 
 import com.pi4j.io.gpio.GpioPinDigitalOutput;

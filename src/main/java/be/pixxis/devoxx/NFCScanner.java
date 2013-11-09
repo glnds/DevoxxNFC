@@ -1,5 +1,7 @@
 package be.pixxis.devoxx;
 
+import be.pixxis.devoxx.messaging.MessageConsumer;
+import be.pixxis.devoxx.messaging.PersistMessageThread;
 import be.pixxis.devoxx.types.Platform;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;

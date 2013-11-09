@@ -1,6 +1,7 @@
-package be.pixxis.devoxx;
+package be.pixxis.devoxx.messaging;
 
 
+import be.pixxis.devoxx.NFCScanner;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
