@@ -1,7 +1,7 @@
 package be.pixxis.devoxx;
 
+import be.pixxis.devoxx.led.AnimationThread;
 import be.pixxis.devoxx.led.LedStrip;
-import be.pixxis.devoxx.led.LedStripAnimationThread;
 import be.pixxis.devoxx.messaging.MessageConsumer;
 import be.pixxis.devoxx.messaging.PersistMessageThread;
 import be.pixxis.devoxx.types.Platform;
@@ -148,7 +148,7 @@ public class NFCScanner {
         final ConnectionFactory rabbitConnectionFactory = new ConnectionFactory();
         rabbitConnectionFactory.setHost("localhost");
         final Connection rabbitConnection;
-        Channel rabbitChannel;
+        Channel rabbitChannel = null;
 
 
         // setup SPI for communication with the led strip.
@@ -169,7 +169,7 @@ public class NFCScanner {
 
         // Start led animation
         if (!DEBUG_MODE) {
-            final Thread ledStripAnimationThread = new Thread(new LedStripAnimationThread(12, 0.5F)));
+            final Thread ledStripAnimationThread = new Thread(new AnimationThread(12, 0.5F));
             ledStripAnimationThread.setPriority(Thread.MIN_PRIORITY);
             ledStripAnimationThread.start();
         }
@@ -239,7 +239,7 @@ public class NFCScanner {
                             }
 
                             //yield?
-                            Thread.sleep(10);
+                            Thread.sleep(100);
                         } catch (InterruptedException e) {
                             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         } catch (CardException e) {
@@ -262,8 +262,12 @@ public class NFCScanner {
     }
 
     private static List<CardChannel> initializeTerminals(final CardTerminals terminals) throws CardException {
-        log(terminals.list().size() + " terminal(s) found...");
-
+        try {
+            log(terminals.list().size() + " terminal(s) found...");
+        } catch (CardException e) {
+            log("No terminals found! Exit!");
+            System.exit(0);
+        }
         // Initialize the terminal channels.
         final List<CardChannel> channels = new ArrayList<CardChannel>();
 
