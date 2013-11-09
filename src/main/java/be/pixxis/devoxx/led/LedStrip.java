@@ -5,13 +5,11 @@ import com.pi4j.wiringpi.Spi;
 /**
  * @author Gert Leenders
  */
-public class LedStrip {
-
+public final class LedStrip {
 
     private int numberOfLeds;
     private RGBLed[] ledBuffer;
     private float brightness;
-
 
     public LedStrip(final int numberOfLeds, final float brightness) throws IllegalArgumentException {
         if (brightness < 0 || brightness > 1.0) {
@@ -24,29 +22,6 @@ public class LedStrip {
         }
 
         this.brightness = brightness;
-    }
-
-    public static void main(String[] args) {
-        // setup SPI for communication
-        int fd = Spi.wiringPiSPISetup(0, 10000000);
-
-        if (fd <= -1) {
-            System.out.println(" ==>> SPI SETUP FAILED");
-            return;
-        }
-
-        LedStrip s = new LedStrip(12, 0.5F);
-
-        //s.testStrip();
-
-        s.allOff();
-
-        for (int i = 0; i < 30; i++) {
-
-            s.animation();
-
-        }
-        s.allOff();
     }
 
     public void allOff() {
@@ -120,99 +95,86 @@ public class LedStrip {
         Spi.wiringPiSPIDataRW(0, endPacket, 1);
     }
 
-    public void testStrip() {
-        try {
-            allOff();
+    public void testStrip() throws InterruptedException {
+        allOff();
 
-            fill(0, 255, 0);
-            update();
+        fill(0, 255, 0);
+        update();
 
-            Thread.sleep(2000);
+        Thread.sleep(2000);
 
-            fill(0, 0, 255);
-            update();
+        fill(0, 0, 255);
+        update();
 
-            Thread.sleep(2000);
+        Thread.sleep(2000);
 
-            fill(255, 0, 0);
-            update();
+        fill(255, 0, 0);
+        update();
 
-            Thread.sleep(2000);
+        Thread.sleep(2000);
 
-            allOff();
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        allOff();
     }
 
-    public void animation() {
-        try {
-            fill(0, 255, 0, 1, 4, 0.15F);
-            fill(255, 255, 0, 5, 8, 0.15F);
-            fill(255, 0, 0, 9, 12, 0.15F);
-            update();
-            Thread.sleep(100);
+    public void animation() throws InterruptedException {
+        fill(0, 255, 0, 1, 4, 0.15F);
+        fill(255, 255, 0, 5, 8, 0.15F);
+        fill(255, 0, 0, 9, 12, 0.15F);
+        update();
+        Thread.sleep(100);
 
-            //Green
-            setLed(4, 0, 255, 0, 0.3F);
-            //Red
-            setLed(9, 255, 0, 0, 0.3F);
-            update();
-            Thread.sleep(100);
+        //Green
+        setLed(4, 0, 255, 0, 0.3F);
+        //Red
+        setLed(9, 255, 0, 0, 0.3F);
+        update();
+        Thread.sleep(100);
 
-            //Green
-            setLed(3, 0, 255, 0, 0.3F);
-            //Red
-            setLed(10, 255, 0, 0, 0.3F);
-            update();
-            Thread.sleep(100);
+        //Green
+        setLed(3, 0, 255, 0, 0.3F);
+        //Red
+        setLed(10, 255, 0, 0, 0.3F);
+        update();
+        Thread.sleep(100);
 
-            //Green
-            setLed(2, 0, 255, 0, 0.3F);
-            //Red
-            setLed(11, 255, 0, 0, 0.3F);
-            update();
-            Thread.sleep(100);
+        //Green
+        setLed(2, 0, 255, 0, 0.3F);
+        //Red
+        setLed(11, 255, 0, 0, 0.3F);
+        update();
+        Thread.sleep(100);
 
+        //Green
+        setLed(1, 0, 255, 0, 0.3F);
+        //Yellow
+        fill(255, 255, 0, 5, 8, 0.3F);
+        //Red
+        setLed(12, 255, 0, 0, 0.3F);
+        update();
+        Thread.sleep(100);
+
+        for (int i = 0; i < 40; i += 4) {
+            float j = (float) i / 100;
             //Green
-            setLed(1, 0, 255, 0, 0.3F);
+            setLed(1, 0, 255, 0, 0.3F + j);
             //Yellow
-            fill(255, 255, 0, 5, 8, 0.3F);
+            fill(255, 255, 0, 6, 7, 0.3F + j);
             //Red
-            setLed(12, 255, 0, 0, 0.3F);
+            setLed(12, 255, 0, 0, 0.3F + j);
             update();
             Thread.sleep(100);
+        }
 
-            for (int i = 0; i < 40; i += 4) {
-                float j = (float) i / 100;
-                //Green
-                setLed(1, 0, 255, 0, 0.3F + j);
-                //Yellow
-                fill(255, 255, 0, 6, 7, 0.3F + j);
-                //Red
-                setLed(12, 255, 0, 0, 0.3F + j);
-                update();
-                Thread.sleep(100);
-            }
-
-            for (int i = 0; i < 40; i += 4) {
-                float j = (float) i / 100;
-                //Green
-                setLed(1, 0, 255, 0, 0.6F - j);
-                //Yellow
-                fill(255, 255, 0, 6, 7, 0.6F - j);
-                //Red
-                setLed(12, 255, 0, 0, 0.6F - j);
-                update();
-                Thread.sleep(100);
-            }
-
-
-            //Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        for (int i = 0; i < 40; i += 4) {
+            float j = (float) i / 100;
+            //Green
+            setLed(1, 0, 255, 0, 0.6F - j);
+            //Yellow
+            fill(255, 255, 0, 6, 7, 0.6F - j);
+            //Red
+            setLed(12, 255, 0, 0, 0.6F - j);
+            update();
+            Thread.sleep(100);
         }
     }
-
 }

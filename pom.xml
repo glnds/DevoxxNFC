@@ -67,7 +67,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>be.pixxis.devoxx.led.LedStrip</mainClass>
+                            <mainClass>be.pixxis.devoxx.NFCScanner</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

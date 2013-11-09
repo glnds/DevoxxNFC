@@ -35,9 +35,10 @@ Once RabbitMQ is installed you can accesses the management interface by navigati
 
 ## Run ##
 usage: DevoxxNFC<br />
- -r,--room <number>     use number to specify the room<br />
- -l,--leds              enables debugging leds<br />
- -p,--platform <name>   specify then platform
+ -d,--debug             enter debug mode<br />
+ -m,--messaging         enable messaging<br />
+ -p,--platform <name>   specify then platform<br />
+ -r,--room <number>     use number to specify the room
  
 ## Architectuur
 

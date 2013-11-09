@@ -1,5 +1,7 @@
 package be.pixxis.devoxx;
 
+import be.pixxis.devoxx.led.LedStrip;
+import be.pixxis.devoxx.led.LedStripAnimationThread;
 import be.pixxis.devoxx.messaging.MessageConsumer;
 import be.pixxis.devoxx.messaging.PersistMessageThread;
 import be.pixxis.devoxx.types.Platform;
@@ -7,6 +9,7 @@ import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.RaspiPin;
+import com.pi4j.wiringpi.Spi;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -26,7 +29,8 @@ import java.util.List;
  */
 public class NFCScanner {
 
-    public static boolean ENABLE_LEDS = false;
+    public static boolean DEBUG_MODE = false;
+    public static boolean MESSAGING_ENABLED = false;
     public static String NFC_PERSISTENT_QUEUE;
     public static String NFC_QUEUE;
     private static int ROOM_NUMBER;
@@ -35,6 +39,8 @@ public class NFCScanner {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+
+        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
         final CommandLineParser parser = new GnuParser();
 
@@ -58,7 +64,11 @@ public class NFCScanner {
 
         //TODO add server ip
 
-        options.addOption("l", "leds", false, "enables debugging leds");
+        // Add debug option
+        options.addOption("d", "debug", false, "enter debug mode");
+
+        // Add messaging option
+        options.addOption("m", "messaging", false, "enable messaging");
 
         Platform platform = Platform.RASPBERRY_PI;
 
@@ -78,10 +88,21 @@ public class NFCScanner {
                 }
             }
 
-            if (line.hasOption("l")) {
-                ENABLE_LEDS = true;
+            if (line.hasOption("d")) {
+                DEBUG_MODE = true;
+                log("Debug Mode ENABLED.");
             }
 
+            if (line.hasOption("m")) {
+                MESSAGING_ENABLED = true;
+                log("Messaging ENABLED.");
+            }
+
+        } catch (UnrecognizedOptionException uoe) {
+            System.out.println(uoe.getMessage());
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("DevoxxNFC", options);
+            System.exit(0);
         } catch (MissingOptionException moe) {
             System.out.println(moe.getMessage());
             HelpFormatter formatter = new HelpFormatter();
@@ -94,12 +115,14 @@ public class NFCScanner {
             System.exit(0);
         } catch (ParseException exp) {
             exp.printStackTrace();
+            System.exit(0);
         } catch (NumberFormatException nfe) {
             System.out.println("Invalid number for option:r");
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp("DevoxxNFC", options);
             System.exit(0);
         }
+
 
         NFC_PERSISTENT_QUEUE = "nfc_scans_pers_room_" + ROOM_NUMBER;
         NFC_QUEUE = "nfc_scans_room_" + ROOM_NUMBER;
@@ -114,6 +137,7 @@ public class NFCScanner {
 
         //TODO only enable leds in debug mode.
         //TODO Clean up code
+        //TODO add logger
         final GpioController gpio = GpioFactory.getInstance();
         final GpioPinDigitalOutput led = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00);
         final GpioPinDigitalOutput ledEnQueue = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01);
@@ -127,18 +151,43 @@ public class NFCScanner {
         Channel rabbitChannel;
 
 
+        // setup SPI for communication with the led strip.
+        int fd = Spi.wiringPiSPISetup(0, 10000000);
+        if (fd <= -1) {
+            log("SPI initialization FAILED.");
+            return;
+        }
+        log("SPI initialization SUCCEEDED.");
+
+        // Test proper working of ledstrip
+        final LedStrip ledStrip = new LedStrip(12, 0.5F);
         try {
-            rabbitConnection = rabbitConnectionFactory.newConnection();
-            rabbitChannel = rabbitConnection.createChannel();
-            // Non persistent queue
-            rabbitChannel.queueDeclare(NFC_QUEUE, false, false, false, null);
+            ledStrip.testStrip();
+        } catch (InterruptedException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
 
-            // Start a thread to move message from a non persistent queue to a durable que.
-            (new Thread(new PersistMessageThread(rabbitConnection, ledDequeue))).start();
+        // Start led animation
+        if (!DEBUG_MODE) {
+            final Thread ledStripAnimationThread = new Thread(new LedStripAnimationThread(12, 0.5F)));
+            ledStripAnimationThread.setPriority(Thread.MIN_PRIORITY);
+            ledStripAnimationThread.start();
+        }
 
-            // Start a thread to consume the durable messages.
-            (new Thread(new MessageConsumer(rabbitConnection, ledDequeue))).start();
+        try {
+            if (MESSAGING_ENABLED) {
+                rabbitConnection = rabbitConnectionFactory.newConnection();
+                rabbitChannel = rabbitConnection.createChannel();
+                // Non persistent queue
+                rabbitChannel.queueDeclare(NFC_QUEUE, false, false, false, null);
 
+                // Start a thread to move message from a non persistent queue to a durable que.
+                (new Thread(new PersistMessageThread(rabbitConnection, ledDequeue))).start();
+
+
+                // Start a thread to consume the durable messages.
+                (new Thread(new MessageConsumer(rabbitConnection, ledDequeue))).start();
+            }
 
             // Initialize the NFC terminals.
             TerminalFactory terminalFactory = TerminalFactory.getDefault();
@@ -174,20 +223,23 @@ public class NFCScanner {
 
                                 final String id = hex2String(ID);
                                 log("Scanned ID: " + id);
-                                if (ENABLE_LEDS) {
-                                    led.pulse(100);
-                                }
+//                                if (ENABLE_LEDS) {
+//                                    led.pulse(100);
+//                                }100
 
                                 // Non persistent message
-                                rabbitChannel.basicPublish("", NFC_QUEUE, MessageProperties.TEXT_PLAIN, id.getBytes());
-                                log("ID: " + id + " enqueued on NON persistent queue.");
-                                if (ENABLE_LEDS) {
-                                    ledEnQueue.pulse(100);
+                                if (MESSAGING_ENABLED) {
+                                    rabbitChannel.basicPublish("", NFC_QUEUE, MessageProperties.TEXT_PLAIN, id.getBytes());
+                                    log("ID: " + id + " enqueued on NON persistent queue.");
                                 }
+
+//                                if (ENABLE_LEDS) {
+//                                    ledEnQueue.pulse(100);
+//                                }
                             }
 
                             //yield?
-                            Thread.sleep(250);
+                            Thread.sleep(10);
                         } catch (InterruptedException e) {
                             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         } catch (CardException e) {
@@ -237,11 +289,13 @@ public class NFCScanner {
             log("Channel: " + channelNr + " initialized.");
 
             // SERIAL ID
-            ResponseAPDU response = channel.transmit(new CommandAPDU(new byte[]{(byte) 0x80, (byte) 0x14, (byte) 0x00, (byte) 0x00, (byte) 0x08})); // Random Nr from ACOS6
+            ResponseAPDU response = channel.transmit(new CommandAPDU(new byte[]{(byte) 0x80, (byte) 0x14, (byte) 0x00, (byte) 0x00,
+                    (byte) 0x08})); // Random Nr from ACOS6
             log("Channel: " + channelNr + ", serial response: " + hex2String(response.getBytes()));
 
             // CARD ID
-            response = channel.transmit(new CommandAPDU(new byte[]{(byte) 0x80, (byte) 0x14, (byte) 0x04, (byte) 0x00, (byte) 0x06})); // Random Nr from ACOS6
+            response = channel.transmit(new CommandAPDU(new byte[]{(byte) 0x80, (byte) 0x14, (byte) 0x04, (byte) 0x00,
+                    (byte) 0x06})); // Random Nr from ACOS6
             log("Channel: " + channelNr + ", card response: " + hex2String(response.getBytes()));
         }
 
