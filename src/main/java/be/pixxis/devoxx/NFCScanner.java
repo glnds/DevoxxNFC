@@ -202,7 +202,7 @@ public class NFCScanner {
                 for (CardTerminal cardTerminal : terminals.list()) {
                     log(cardTerminal.toString());
 
-                    final Terminal terminal = new Terminal(cardTerminal, mainAnimation, ledStrip);
+                    final TerminalJ terminal = new TerminalJ(cardTerminal, mainAnimation, ledStrip);
                     final Thread terminalThread = new Thread(terminal);
                     terminalThread.setPriority(Thread.MAX_PRIORITY);
                     terminalThread.start();
