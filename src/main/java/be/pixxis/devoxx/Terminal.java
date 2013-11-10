@@ -17,6 +17,11 @@ public final class Terminal implements Runnable {
     static {
         READERS.put("3030323536319000", NFCAction.VOTE_UP);
         READERS.put("3030303634389000", NFCAction.FAVORITE);
+        // more IDs
+        READERS.put("3030303633309000", NFCAction.VOTE_UP);
+        READERS.put("3030313433309000", NFCAction.FAVORITE);
+        READERS.put("3030303539359000", NFCAction.VOTE_DOWN);
+        // nore needed here...
     }
 
     private final NFCAction action;
