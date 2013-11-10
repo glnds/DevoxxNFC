@@ -37,7 +37,7 @@ public class TerminalJ implements Runnable {
         NFCScanner.log(cardTerminal.toString());
 
         this.cardTerminal = cardTerminal;
-        this.card = cardTerminal.connect("*");
+        this.card = cardTerminal.connect("T=0");
 
         channel = card.getBasicChannel();
 
@@ -111,6 +111,7 @@ public class TerminalJ implements Runnable {
         if (SupportedNFC.isSupportedNFC(atr)) {
             try {
                 byte[] uidBytes = readNfcUid(channel, atr);
+                if (atr != null){
                 final String uid = NFCScanner.hex2String(uidBytes);
                 if (uid.equals("")) {
                     throw new CardException("Lees opnieuw");
@@ -124,12 +125,14 @@ public class TerminalJ implements Runnable {
 //                        System.out.println("Do something useful now with " + uid);
 //                    }
 //                });
+                }
             } catch (CardException e) {
                 e.printStackTrace();
                 //Thread.sleep(2000);
                 //readyToReadCard =true;
 
             }
+        readyToReadCard = true;
         } else {
             NFCScanner.log("Geen ondersteunde kaart");
             readyToReadCard =true;

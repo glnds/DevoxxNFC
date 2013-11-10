@@ -26,15 +26,17 @@ public final class Terminal implements Runnable {
     }
 
     private final NFCAction action;
-    private final CardChannel channel;
     private final LedStrip ledStrip;
     private final MainAnimation mainAnimation;
+    private final CardTerminal cardTerminal;
 
     public Terminal(final CardTerminal cardTerminal, final MainAnimation mainAnimation, final LedStrip ledStrip) throws CardException {
         NFCScanner.log(cardTerminal.toString());
 
-        final Card card = cardTerminal.connect("*");
-        channel = card.getBasicChannel();
+        this.cardTerminal = cardTerminal;
+
+        final Card card = this.cardTerminal.connect("T=0");
+        final CardChannel channel = card.getBasicChannel();
 
         this.mainAnimation = mainAnimation;
         this.ledStrip = ledStrip;
@@ -67,12 +69,23 @@ public final class Terminal implements Runnable {
         } else {
             NFCScanner.log("Terminal for : " + action + " initialized.");
         }
+        card.disconnect(true);
     }
 
     @Override
     public void run() {
+        long i = 0;
+        final String name = Thread.currentThread().getName();
+        long threadId = Thread.currentThread().getId();
+
         while (true) {
+
+            Card card = null;
             try {
+
+                card = this.cardTerminal.connect("T=0");
+                final CardChannel channel = card.getBasicChannel();
+
                 ResponseAPDU response;
                 response = channel.transmit(new CommandAPDU(new byte[]{
                         (byte) 0xff, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06,  // 122
@@ -80,6 +93,9 @@ public final class Terminal implements Runnable {
                         (byte) 0x01, (byte) 0x01,
                         (byte) 0x00, (byte) 0x20, (byte) 0x40  // MiFare ,ISO/A, DEP
                 }));
+
+                NFCScanner.log("CommandAPDU transmit. >> " + name + " - " + threadId);
+
                 byte[] buffer = response.getBytes();
 
                 if (buffer[2] == (byte) 0x01) {
@@ -92,38 +108,65 @@ public final class Terminal implements Runnable {
                     final String id = NFCScanner.hex2String(ID);
                     NFCScanner.log("Scanned ID: " + id);
 
-                    if (mainAnimation != null) {
-                        mainAnimation.suspendUpdates(true);
-                    }
-
-                    if (action == NFCAction.VOTE_UP) {
-                        ledStrip.animateUpVote();
-                    } else if (action == NFCAction.VOTE_DOWN) {
-                        ledStrip.animateDownVote();
-                    } else if (action == NFCAction.FAVORITE) {
-                        ledStrip.animateFavorite();
-                    }
-
-                    if (mainAnimation != null) {
-                        mainAnimation.suspendUpdates(false);
-                    }
+//                    if (mainAnimation != null) {
+//                        mainAnimation.suspendUpdates(true);
+//                    }
+//
+//                    if (action == NFCAction.VOTE_UP) {
+//                        ledStrip.animateUpVote();
+//                    } else if (action == NFCAction.VOTE_DOWN) {
+//                        ledStrip.animateDownVote();
+//                    } else if (action == NFCAction.FAVORITE) {
+//                        ledStrip.animateFavorite();
+//                    }
+//
+//                    if (mainAnimation != null) {
+//                        mainAnimation.suspendUpdates(false);
+//                    }
 
 //                // Non persistent message
 //                if (NFCScanner.MESSAGING_ENABLED) {
 //                    rabbitChannel.basicPublish("", NFC_QUEUE, MessageProperties.TEXT_PLAIN, id.getBytes());
 //                    NFCScanner.log("ID: " + id + " enqueued on NON persistent queue.");
 //                }
+
+                    //channel.close();
+                    card.disconnect(true);
+
                 } else {
                     Thread.sleep(100);
                 }
+                i++;
 
             } catch (InterruptedException e) {
+                try {
+                    if (card != null) {
+                        card.disconnect(true);
+                    }
+                } catch (CardException ce) {
+                    ce.printStackTrace();
+                }
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 System.exit(0);
             } catch (CardException e) {
+
+                try {
+                    if (card != null) {
+                        card.disconnect(true);
+                    }
+                } catch (CardException ce) {
+                    ce.printStackTrace();
+                }
                 e.printStackTrace();
                 System.exit(0);
-            } catch (Exception e){
+            } catch (Exception e) {
+                try {
+                    if (card != null) {
+                        card.disconnect(true);
+                    }
+                } catch (CardException ce) {
+                    ce.printStackTrace();
+                }
                 e.printStackTrace();
                 System.exit(0);
             }
