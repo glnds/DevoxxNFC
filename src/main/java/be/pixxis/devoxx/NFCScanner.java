@@ -12,7 +12,6 @@ import com.rabbitmq.client.ConnectionFactory;
 import org.apache.commons.cli.*;
 
 import javax.smartcardio.CardException;
-import javax.smartcardio.CardTerminal;
 import javax.smartcardio.CardTerminals;
 import javax.smartcardio.TerminalFactory;
 import java.io.File;
@@ -199,14 +198,14 @@ public class NFCScanner {
                 }
 
                 // Open a channel for every terminal.
-                for (CardTerminal cardTerminal : terminals.list()) {
-                    log(cardTerminal.toString());
+               // for (CardTerminal cardTerminal : terminals.list()) {
+                   // log(cardTerminal.toString());
 
-                    final Terminal terminal = new Terminal(cardTerminal, mainAnimation, ledStrip);
+                    final Terminal terminal = new Terminal(terminals, mainAnimation, ledStrip);
                     final Thread terminalThread = new Thread(terminal);
                     terminalThread.setPriority(Thread.MAX_PRIORITY);
                     terminalThread.start();
-                }
+               // }
 
             } else {
                 log("No terminals found! Exit!");

@@ -25,51 +25,56 @@ public final class Terminal implements Runnable {
         // nore needed here...
     }
 
-    private final NFCAction action;
-    private final LedStrip ledStrip;
-    private final MainAnimation mainAnimation;
-    private final CardTerminal cardTerminal;
+    //private final NFCAction action;
+    //private final LedStrip ledStrip;
+    //private final MainAnimation mainAnimation;
+    //private final CardTerminal cardTerminal;
+    private final CardTerminals terminals;
 
-    public Terminal(final CardTerminal cardTerminal, final MainAnimation mainAnimation, final LedStrip ledStrip) throws CardException {
-        NFCScanner.log(cardTerminal.toString());
+    public Terminal(final CardTerminals terminals, final MainAnimation mainAnimation, final LedStrip ledStrip) throws CardException {
 
-        this.cardTerminal = cardTerminal;
+        this.terminals = terminals;
 
-        final Card card = this.cardTerminal.connect("T=0");
-        final CardChannel channel = card.getBasicChannel();
+        for (CardTerminal cardTerminal : terminals.list()) {
 
-        this.mainAnimation = mainAnimation;
-        this.ledStrip = ledStrip;
+            NFCScanner.log(cardTerminal.toString());
 
-        final int channelNr = channel.getChannelNumber();
+            final Card card = cardTerminal.connect("T=0");
+            final CardChannel channel = card.getBasicChannel();
 
-        // Configure the readers.
-        channel.transmit(new CommandAPDU(new byte[]{
-                (byte) 0xff, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06,  // 122
-                (byte) 0xD4, (byte) 0x32,
-                (byte) 0x05,
-                (byte) 0x00, (byte) 0x00, (byte) 0x50
-        }));
-        NFCScanner.log("Channel: " + channelNr + " initialized.");
+//        this.mainAnimation = mainAnimation;
+//        this.ledStrip = ledStrip;
 
-        // SERIAL ID
-        ResponseAPDU response = channel.transmit(new CommandAPDU(new byte[]{(byte) 0x80, (byte) 0x14, (byte) 0x00, (byte) 0x00,
-                (byte) 0x08})); // Random Nr from ACOS6
-        NFCScanner.log("Channel: " + channelNr + ", serial response: " + NFCScanner.hex2String(response.getBytes()));
+            final int channelNr = channel.getChannelNumber();
 
-        // CARD ID
-        response = channel.transmit(new CommandAPDU(new byte[]{(byte) 0x80, (byte) 0x14, (byte) 0x04, (byte) 0x00,
-                (byte) 0x06})); // Random Nr from ACOS6
-        NFCScanner.log("Channel: " + channelNr + ", card response: " + NFCScanner.hex2String(response.getBytes()));
+            // Configure the readers.
+            channel.transmit(new CommandAPDU(new byte[]{
+                    (byte) 0xff, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06,  // 122
+                    (byte) 0xD4, (byte) 0x32,
+                    (byte) 0x05,
+                    (byte) 0x00, (byte) 0x00, (byte) 0x50
+            }));
+            NFCScanner.log("Channel: " + channelNr + " initialized.");
 
-        action = (NFCAction) READERS.get(NFCScanner.hex2String(response.getBytes()));
-        if (action == null) {
-            NFCScanner.log("Unable to initialize terminal, loolup in reader table failed!");
-            System.exit(0);
-        } else {
-            NFCScanner.log("Terminal for : " + action + " initialized.");
+            // SERIAL ID
+            ResponseAPDU response = channel.transmit(new CommandAPDU(new byte[]{(byte) 0x80, (byte) 0x14, (byte) 0x00, (byte) 0x00,
+                    (byte) 0x08})); // Random Nr from ACOS6
+            NFCScanner.log("Channel: " + channelNr + ", serial response: " + NFCScanner.hex2String(response.getBytes()));
+
+            // CARD ID
+            response = channel.transmit(new CommandAPDU(new byte[]{(byte) 0x80, (byte) 0x14, (byte) 0x04, (byte) 0x00,
+                    (byte) 0x06})); // Random Nr from ACOS6
+            NFCScanner.log("Channel: " + channelNr + ", card response: " + NFCScanner.hex2String(response.getBytes()));
+
+//        action = (NFCAction) READERS.get(NFCScanner.hex2String(response.getBytes()));
+//        if (action == null) {
+//            NFCScanner.log("Unable to initialize terminal, loolup in reader table failed!");
+//            System.exit(0);
+//        } else {
+//            NFCScanner.log("Terminal for : " + action + " initialized.");
+//        }
+            card.disconnect(true);
         }
-        card.disconnect(true);
     }
 
     @Override
@@ -80,33 +85,41 @@ public final class Terminal implements Runnable {
 
         while (true) {
 
+
             Card card = null;
             try {
+                for (CardTerminal cardTerminal : terminals.list()) {
+                    card = cardTerminal.connect("T=0");
+                    final CardChannel channel = card.getBasicChannel();
 
-                card = this.cardTerminal.connect("T=0");
-                final CardChannel channel = card.getBasicChannel();
+                    ResponseAPDU response;
+//                    response = channel.transmit(new CommandAPDU(new byte[]{
+//                            (byte) 0xff, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06,  // 122
+//                            (byte) 0xD4, (byte) 0x60,
+//                            (byte) 0x01, (byte) 0x01,
+//                            (byte) 0x00, (byte) 0x20, (byte) 0x40  // MiFare ,ISO/A, DEP
+//                    }));
 
-                ResponseAPDU response;
-                response = channel.transmit(new CommandAPDU(new byte[]{
-                        (byte) 0xff, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06,  // 122
-                        (byte) 0xD4, (byte) 0x60,
-                        (byte) 0x01, (byte) 0x01,
-                        (byte) 0x00, (byte) 0x20, (byte) 0x40  // MiFare ,ISO/A, DEP
-                }));
+                    response = channel.transmit(new CommandAPDU(new byte[]{
+                            (byte) 0xff, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06,  // 122
+                            (byte) 0xD4, (byte) 0x60,
+                            (byte) 0x01, (byte) 0x01,
+                            (byte) 0x00, (byte) 0x20  // MiFare ,ISO/A, DEP
+                    }));
 
-                NFCScanner.log("CommandAPDU transmit. >> " + name + " - " + threadId);
+                    NFCScanner.log("CommandAPDU transmit. >> " + name + " - " + threadId);
 
-                byte[] buffer = response.getBytes();
+                    byte[] buffer = response.getBytes();
 
-                if (buffer[2] == (byte) 0x01) {
-                    byte[] ID = new byte[4];
-                    ID[0] = buffer[10];
-                    ID[1] = buffer[11];
-                    ID[2] = buffer[12];
-                    ID[3] = buffer[13];
+                    if (buffer[2] == (byte) 0x01) {
+                        byte[] ID = new byte[4];
+                        ID[0] = buffer[10];
+                        ID[1] = buffer[11];
+                        ID[2] = buffer[12];
+                        ID[3] = buffer[13];
 
-                    final String id = NFCScanner.hex2String(ID);
-                    NFCScanner.log("Scanned ID: " + id);
+                        final String id = NFCScanner.hex2String(ID);
+                        NFCScanner.log("Scanned ID: " + id);
 
 //                    if (mainAnimation != null) {
 //                        mainAnimation.suspendUpdates(true);
@@ -130,13 +143,16 @@ public final class Terminal implements Runnable {
 //                    NFCScanner.log("ID: " + id + " enqueued on NON persistent queue.");
 //                }
 
-                    //channel.close();
-                    card.disconnect(true);
+                        //channel.close();
+                        card.disconnect(true);
 
-                } else {
-                    Thread.sleep(100);
+                    } else {
+                        Thread.sleep(100);
+                    }
+                    i++;
+
+
                 }
-                i++;
 
             } catch (InterruptedException e) {
                 try {
@@ -173,6 +189,8 @@ public final class Terminal implements Runnable {
 //        } catch (IOException ioe) {
 //            ioe.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 //        }
+
+
         }
     }
 }
