@@ -133,7 +133,6 @@ public class NFCScanner {
         //TODO Clean up code
         //TODO add logger
 
-
         // Initialize Rabbit MQ connection
         final ConnectionFactory rabbitConnectionFactory = new ConnectionFactory();
         rabbitConnectionFactory.setHost("localhost");
@@ -187,6 +186,8 @@ public class NFCScanner {
 
             final CardTerminals terminals = terminalFactory.terminals();
             log(terminals.toString());
+
+            terminals.list().get(0);
 
             if (terminals != null) {
 
