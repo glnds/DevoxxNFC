@@ -1,8 +1,8 @@
 package be.pixxis.devoxx;
 
-import be.pixxis.devoxx.led.LedStrip;
-import be.pixxis.devoxx.led.MainAnimation;
+import be.pixxis.devoxx.animation.MainAnimation;
 import be.pixxis.devoxx.types.NFCAction;
+import be.pixxis.lpd8806.LedStrip;
 
 import javax.smartcardio.*;
 import java.util.HashMap;

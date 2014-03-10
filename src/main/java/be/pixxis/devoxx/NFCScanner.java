@@ -1,10 +1,10 @@
 package be.pixxis.devoxx;
 
-import be.pixxis.devoxx.led.LedStrip;
-import be.pixxis.devoxx.led.MainAnimation;
+import be.pixxis.devoxx.animation.MainAnimation;
 import be.pixxis.devoxx.messaging.MessageConsumer;
 import be.pixxis.devoxx.messaging.PersistMessageThread;
 import be.pixxis.devoxx.types.Platform;
+import be.pixxis.lpd8806.LedStrip;
 import com.pi4j.wiringpi.Spi;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -158,7 +158,7 @@ public class NFCScanner {
 
         // Start led animation
         MainAnimation mainAnimation = null;
-        Thread mainAnimationThread = null;
+        Thread mainAnimationThread;
         if (!DEBUG_MODE) {
             mainAnimation = new MainAnimation(12, 0.5F);
             mainAnimationThread = new Thread(mainAnimation);
@@ -187,7 +187,7 @@ public class NFCScanner {
             final CardTerminals terminals = terminalFactory.terminals();
             log(terminals.toString());
 
-            terminals.list().get(0);
+           // terminals.list().get(0);
 
             if (terminals != null) {
 

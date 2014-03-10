@@ -20,7 +20,14 @@ Either copy the lib files to your jre/lib/ext directory or add them to your clas
 ### RabbitMQ
 http://www.rabbitmq.com/
 
-#### Installation
+# Installation
+
+## Arch linux
+sudo pacman -S jdk7-openjdk
+sudo pacman -S pcsclite
+sudo pacman -S pcsc-tools
+
+
 
 Add the following line to your /etc/apt/sources.list:
 <pre><code># deb http://www.rabbitmq.com/debian/ testing main</code></pre>
