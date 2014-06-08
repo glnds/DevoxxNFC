@@ -10,6 +10,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import org.apache.commons.cli.*;
+import org.apache.commons.validator.routines.InetAddressValidator;
 
 import javax.smartcardio.CardException;
 import javax.smartcardio.CardTerminals;
@@ -24,18 +25,19 @@ import java.io.IOException;
  */
 public class NFCScanner {
 
+    public static boolean ANIMATE = false;
     public static boolean DEBUG_MODE = false;
     public static boolean MESSAGING_ENABLED = false;
     public static String NFC_PERSISTENT_QUEUE;
     public static String NFC_QUEUE;
     private static int ROOM_NUMBER;
+    private static String SERVER_IP;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
 
-        // Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
         final CommandLineParser parser = new GnuParser();
 
@@ -49,23 +51,40 @@ public class NFCScanner {
                 .isRequired()
                 .create("r"));
 
-        // Add room option
+        // Add the server ip option
+        options.addOption(OptionBuilder.withLongOpt("server")
+                .hasArgs()
+                .withArgName("ip")
+                .withDescription("use server to specify the server's ip address")
+                .isRequired()
+                .create("s"));
+
+        // Add platform option
         options.addOption(OptionBuilder.withLongOpt("platform")
                 .hasArgs()
                 .withArgName("name")
-                .withDescription("specify then platform")
+                .withDescription("specify then platform. arch (default), ubuntu, raspbian")
                 .create("p"));
 
+        // Add the server ip option
+        options.addOption(OptionBuilder.withLongOpt("server")
+                .hasArgs()
+                .withArgName("ip")
+                .withDescription("use server to specify the server's ip address")
+                .isRequired()
+                .create("s"));
 
-        //TODO add server ip
-
-        // Add debug option
-        options.addOption("d", "debug", false, "enter debug mode");
+        // Add led animation option
+        options.addOption("a", "animation", false, "enable led animation");
 
         // Add messaging option
         options.addOption("m", "messaging", false, "enable messaging");
 
-        Platform platform = Platform.RASPBERRY_PI;
+        // Add debug option
+        options.addOption("d", "debug", false, "enable debug mode");
+
+        // Default platform
+        Platform platform = Platform.ARCH;
 
         try {
             // parse the command line arguments
@@ -74,13 +93,28 @@ public class NFCScanner {
             // Get the value for option r (room)
             ROOM_NUMBER = Integer.valueOf(line.getOptionValue("r"));
 
+            // Get the value for option r (room)
+            SERVER_IP = line.getOptionValue("s");
+            InetAddressValidator validator = new InetAddressValidator();
+            if (!validator.isValidInet4Address(SERVER_IP)) {
+                throw new ParseException("Specified server ip is invalid.");
+            }
+
             // Get the value for option p (platform)
             final String platformOption = line.getOptionValue("p");
-
             if (platformOption != null) {
                 if (platformOption.equalsIgnoreCase("ubuntu")) {
                     platform = Platform.UBUNTU;
+                } else if (platformOption.equalsIgnoreCase("raspbian")) {
+                    platform = Platform.RASPBIAN;
+                } else {
+                    throw new ParseException("Specified platform is invalid.");
                 }
+            }
+
+            if (line.hasOption("a")) {
+                ANIMATE = true;
+                log("Animation is ENABLED.");
             }
 
             if (line.hasOption("d")) {
@@ -137,10 +171,10 @@ public class NFCScanner {
         final ConnectionFactory rabbitConnectionFactory = new ConnectionFactory();
         rabbitConnectionFactory.setHost("localhost");
         final Connection rabbitConnection;
-        Channel rabbitChannel = null;
+        Channel rabbitChannel;
 
 
-        // setup SPI for communication with the led strip.
+        // Setup SPI for communication with the led strip.
         int fd = Spi.wiringPiSPISetup(0, 10000000);
         if (fd <= -1) {
             log("SPI initialization FAILED.");
@@ -148,7 +182,7 @@ public class NFCScanner {
         }
         log("SPI initialization SUCCEEDED.");
 
-        // Test proper working of ledstrip
+        // Test proper working of led strip
         final LedStrip ledStrip = new LedStrip(12, 0.5F);
         try {
             ledStrip.testStrip();
@@ -187,7 +221,7 @@ public class NFCScanner {
             final CardTerminals terminals = terminalFactory.terminals();
             log(terminals.toString());
 
-           // terminals.list().get(0);
+            // terminals.list().get(0);
 
             if (terminals != null) {
 
@@ -199,14 +233,14 @@ public class NFCScanner {
                 }
 
                 // Open a channel for every terminal.
-               // for (CardTerminal cardTerminal : terminals.list()) {
-                   // log(cardTerminal.toString());
+                // for (CardTerminal cardTerminal : terminals.list()) {
+                // log(cardTerminal.toString());
 
-                    final Terminal terminal = new Terminal(terminals, mainAnimation, ledStrip);
-                    final Thread terminalThread = new Thread(terminal);
-                    terminalThread.setPriority(Thread.MAX_PRIORITY);
-                    terminalThread.start();
-               // }
+                final Terminal terminal = new Terminal(terminals, mainAnimation, ledStrip);
+                final Thread terminalThread = new Thread(terminal);
+                terminalThread.setPriority(Thread.MAX_PRIORITY);
+                terminalThread.start();
+                // }
 
             } else {
                 log("No terminals found! Exit!");
@@ -219,14 +253,23 @@ public class NFCScanner {
         }
     }
 
+    /**
+     * Initialize the pcsclite driver
+     *
+     * @param platform the platform running the programm
+     * @throws FileNotFoundException
+     */
     private static void initializePcsclite(final Platform platform) throws FileNotFoundException {
         final String pcscliteFileName = System.mapLibraryName("pcsclite") + ".1";
 
         final File pcscliteFile;
         if (platform == Platform.UBUNTU) {
             pcscliteFile = new File("/lib/x86_64-linux-gnu", pcscliteFileName);
-        } else {
+        } else if (platform == Platform.RASPBIAN) {
             pcscliteFile = new File("/usr/lib/arm-linux-gnueabihf", pcscliteFileName);
+        } else {
+            // Default Platform.ARCH
+            pcscliteFile = new File("/usr/lib", pcscliteFileName);
         }
 
         if (pcscliteFile.exists()) {

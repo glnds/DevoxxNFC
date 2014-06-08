@@ -1,12 +1,59 @@
 ## About
-Application for NFC tag scanning
+Application offering the possibility to vote by using NFC tags.
 
 ## Platform
 
-The target platform to run this application is the **Raspberry Pi**. Certain functionality (linked to GPIO) will only work on that platform.
+The target platform for this application is the **Raspberry Pi**. Certain functionality (linked to GPIO) will only work on that platform.
 
-## Dependencies
+## Installation
+
+### Arch linux
 The following applications should be installed on the Raspberry Pi:
+
+#### Pi4j
+- Download the Arch build [here](https://github.com/glnds/pi4j-arch/releases/tag/arch-release%2F0.0.5).
+- Copy the Pi4J library to your Raspberry pi:
+
+		scp pi4j-0.0.5.tar.gz pi@rpi.local:~/
+- Extract the archive:
+
+		tar -xvzf pi4j-0.0.5.tar.gz
+- Install the libraries:
+
+		sudo mkdir /opt/pi4j
+		sudo mv ~/pi4j-0.0.5/lib/ /opt/pi4j/
+		sudo mv ~/pi4j-0.0.5/examples/ /opt/pi4j/
+
+#### Disable pn533 and nfc driver in kernel
+
+	echo "install nfc /bin/false" >> /etc/modprobe.d/blacklist.conf
+	echo "install pn533 /bin/false" >> /etc/modprobe.d/blacklist.conf
+
+#### Install Pcsclite
+
+	sudo pacman -S pcsclite ccid pcsc-tools
+	
+	sudo systemctl start  pcscd.service
+  	sudo systemctl enable  pcscd.service
+
+
+#### Install DevoxxNFC
+
+- install the depencies
+	
+		scp LedStrip-1.0.jar pi@hostname:~/nfc/lib  
+		scp amqp-client-3.1.4.jar pi@hostname:~/nfc/lib    
+		scp commons-cli-1.2.jar pi@hostname:~/nfc/lib    
+		scp commons-validator-1.4.0.jar pi@hostname:~/nfc/lib  
+
+## Run
+
+	 sudo java -cp lib/LedStrip-1.0.jar:lib/amqp-client-3.1.4.jar:lib/commons-cli-1.2.jar:lib/commons-validator-1.4.0.jar:DevoxxNFC.jar:.:classes:/opt/pi4j/lib/'*' be.pixxis.devoxx.NFCScanner -r 1 -s 172.0.0.1
+
+	
+
+
+
 
 ### Pi4J
 http://pi4j.com/<br />
@@ -15,17 +62,12 @@ http://pi4j.com/<br />
     # wget http://pi4j.googlecode.com/files/pi4j-0.0.5.deb
     # sudo dpkg -i pi4j-0.0.5.deb
 
-Either copy the lib files to your jre/lib/ext directory or add them to your classpath when running the application.
+
 
 ### RabbitMQ
 http://www.rabbitmq.com/
 
-# Installation
 
-## Arch linux
-sudo pacman -S jdk7-openjdk
-sudo pacman -S pcsclite
-sudo pacman -S pcsc-tools
 
 
 
