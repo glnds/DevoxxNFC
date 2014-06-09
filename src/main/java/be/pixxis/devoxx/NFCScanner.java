@@ -1,6 +1,6 @@
 package be.pixxis.devoxx;
 
-import be.pixxis.devoxx.animation.MainAnimation;
+import be.pixxis.devoxx.animation.MainAnimationThread;
 import be.pixxis.devoxx.messaging.MessageConsumer;
 import be.pixxis.devoxx.messaging.PersistMessageThread;
 import be.pixxis.devoxx.types.Platform;
@@ -13,11 +13,14 @@ import org.apache.commons.cli.*;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
 import javax.smartcardio.CardException;
+import javax.smartcardio.CardTerminal;
 import javax.smartcardio.CardTerminals;
 import javax.smartcardio.TerminalFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -191,10 +194,10 @@ public class NFCScanner {
         }
 
         // Start led animation
-        MainAnimation mainAnimation = null;
-        Thread mainAnimationThread;
+        MainAnimationThread mainAnimation = null;
+        Thread mainAnimationThread = null;
         if (!DEBUG_MODE) {
-            mainAnimation = new MainAnimation(12, 0.5F);
+            mainAnimation = new MainAnimationThread(ledStrip);
             mainAnimationThread = new Thread(mainAnimation);
             mainAnimationThread.setPriority(Thread.MIN_PRIORITY);
             mainAnimationThread.start();
@@ -218,29 +221,30 @@ public class NFCScanner {
             TerminalFactory terminalFactory = TerminalFactory.getDefault();
             log("Terminal factory = " + terminalFactory);
 
-            final CardTerminals terminals = terminalFactory.terminals();
-            log(terminals.toString());
+            final CardTerminals cardTerminals = terminalFactory.terminals();
+            log(cardTerminals.toString());
 
-            // terminals.list().get(0);
-
-            if (terminals != null) {
+            if (cardTerminals != null) {
 
                 try {
-                    log(terminals.list().size() + " terminal(s) found...");
+                    log(cardTerminals.list().size() + " terminal(s) found...");
                 } catch (CardException e) {
                     log("No terminals found! Exit!");
                     System.exit(0);
                 }
 
-                // Open a channel for every terminal.
-                // for (CardTerminal cardTerminal : terminals.list()) {
-                // log(cardTerminal.toString());
+                final List<Terminal> terminals = new ArrayList<Terminal>();
 
-                final Terminal terminal = new Terminal(terminals, mainAnimation, ledStrip);
-                final Thread terminalThread = new Thread(terminal);
-                terminalThread.setPriority(Thread.MAX_PRIORITY);
-                terminalThread.start();
-                // }
+                // Open a channel for every terminal.
+                for (CardTerminal cardTerminal : cardTerminals.list()) {
+                    log(cardTerminal.toString());
+                    terminals.add(new Terminal(cardTerminal));
+                }
+
+                final NFCListenerThread nfcListener = new NFCListenerThread(terminals, mainAnimation,
+                        new LedStrip(12, 0.5F), mainAnimationThread);
+                final Thread nfcListenerThread = new Thread(nfcListener);
+                nfcListenerThread.start();
 
             } else {
                 log("No terminals found! Exit!");

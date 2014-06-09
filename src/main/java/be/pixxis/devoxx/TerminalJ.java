@@ -1,6 +1,6 @@
 package be.pixxis.devoxx;
 
-import be.pixxis.devoxx.animation.MainAnimation;
+import be.pixxis.devoxx.animation.MainAnimationThread;
 import be.pixxis.devoxx.types.NFCAction;
 import be.pixxis.lpd8806.LedStrip;
 
@@ -29,11 +29,11 @@ public class TerminalJ implements Runnable {
     private final NFCAction action;
     private final CardChannel channel;
     private final LedStrip ledStrip;
-    private final MainAnimation mainAnimation;
+    private final MainAnimationThread mainAnimationThread;
     private final Card card;
     private final CardTerminal cardTerminal;
 
-    public TerminalJ(final CardTerminal cardTerminal, final MainAnimation mainAnimation, final LedStrip ledStrip) throws CardException {
+    public TerminalJ(final CardTerminal cardTerminal, final MainAnimationThread mainAnimationThread, final LedStrip ledStrip) throws CardException {
         NFCScanner.log(cardTerminal.toString());
 
         this.cardTerminal = cardTerminal;
@@ -41,7 +41,7 @@ public class TerminalJ implements Runnable {
 
         channel = card.getBasicChannel();
 
-        this.mainAnimation = mainAnimation;
+        this.mainAnimationThread = mainAnimationThread;
         this.ledStrip = ledStrip;
 
         final int channelNr = channel.getChannelNumber();

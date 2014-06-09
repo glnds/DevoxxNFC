@@ -9,107 +9,66 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <name>NFC voting application</name>
+    <description>NFC voting application developed for Devoxx.</description>
+    <url>https://github.com/glnds/DevoxxNFC</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Gert Leenders</name>
+            <email>leenders.gert@gmail.com</email>
+            <organization>Pixxis</organization>
+            <organizationUrl>http://www.pixxis.be</organizationUrl>
+        </developer>
+    </developers>
+
     <scm>
-        <connection>scm:git:https://github.com/glnds/DevoxxNFC.git</connection>
+        <connection>git@github.com:glnds/DevoxxNFC.git</connection>
+        <developerConnection>scm:git:https://github.com/glnds/DevoxxNFC.git</developerConnection>
+        <url>git@github.com:glnds/DevoxxNFC.git</url>
     </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.7</java.version>
-        <powermock.version>1.5</powermock.version>
     </properties>
 
     <build>
-        <finalName>DevoxxNFC</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.8.1</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>surefire-junit4</artifactId>
-                        <version>2.8.1</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.1</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.1.2</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>be.pixxis.devoxx.NFCScanner</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.dstovall</groupId>
-                <artifactId>onejar-maven-plugin</artifactId>
-                <version>1.4.4</version>
-                <executions>
-                    <execution>
-                        <configuration>
-                            <!-- Optional -->
-                            <onejarVersion>0.97</onejarVersion>
-                            <!-- Optional, use only if you need to include native libraries (dll's) -->
-                            <!--<binlibs>-->
-                                <!--<fileSet>-->
-                                    <!--<directory>${project.build.directory}/dllextract</directory>-->
-                                    <!--<includes>-->
-                                        <!--<include>test.dll</include>-->
-                                    <!--</includes>-->
-                                <!--</fileSet>-->
-                            <!--</binlibs>-->
-                            <!-- Optional, default is false -->
-                            <attachToBuild>true</attachToBuild>
-                            <!-- Optional, default is "onejar" -->
-                            <classifier>onejar</classifier>
-                        </configuration>
-                        <goals>
-                            <goal>one-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>onejar-maven-plugin.googlecode.com</id>
-            <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
-        </pluginRepository>
-    </pluginRepositories>
 
 
     <dependencies>
@@ -144,40 +103,6 @@
             <version>0.0.5</version>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>org.slf4j</groupId>-->
-            <!--<artifactId>slf4j-api</artifactId>-->
-            <!--<version>1.7.6</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-            <!--<groupId>ch.qos.logback</groupId>-->
-            <!--<artifactId>logback-classic</artifactId>-->
-            <!--<version>1.1.1</version>-->
-        <!--</dependency>-->
-
-        <!-- Test Depencies -->
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.8.2</version>
-            <scope>test</scope>
-        </dependency>
-
-
-
     </dependencies>
 
-    <repositories>
-        <repository>
-            <id>oss-snapshots-repo</id>
-            <name>Sonatype OSS Maven Repository</name>
-            <url>https://oss.sonatype.org/content/groups/public</url>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
 </project>
