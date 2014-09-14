@@ -49,6 +49,8 @@ The following applications should be installed on the Raspberry Pi:
 ## Run
 
 	 sudo java -cp lib/LedStrip-1.0.jar:lib/amqp-client-3.1.4.jar:lib/commons-cli-1.2.jar:lib/commons-validator-1.4.0.jar:DevoxxNFC.jar:.:classes:/opt/pi4j/lib/'*' be.pixxis.devoxx.NFCScanner -r 1 -s 172.0.0.1
+	 
+	 sudo java -cp .:DevoxxNFC-1.0-SNAPSHOT.jar:/opt/pi4j/lib/'*':lib/'*' be.pixxis.devoxx.NFCScanner -r 5 -s 1.1.1.1
 
 	
 
