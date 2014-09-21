@@ -1,11 +1,48 @@
 ## About
-Application offering the possibility to vote by using NFC tags.
+Java 8 application offering the possibility to vote using NFC tags.
 
 ## Platform
 
-The target platform for this application is the **Raspberry Pi**. Certain functionality (linked to GPIO) will only work on that platform.
+The target platform is the **Raspberry Pi**. Certain functionality (linked to GPIO) will only work on this platform.
 
 ## Installation
+
+### Prepare Wheezy
+
+Install extra packages
+
+	sudo apt-get install libpcsclite1 pcscd vim htop
+
+Enable SPI
+	sudo vim /etc/modprobe.d/raspi-blacklist.conf
+	
+	#blacklist spi-bcm2708		
+
+Install wiringPi
+
+	git clone git://git.drogon.net/wiringPi
+	cd wiringPi
+	git pull origin
+	
+
+	wget http://pi4j.googlecode.com/files/pi4j-0.0.5.deb
+	sudo dpkg -i pi4j-0.0.5.deb
+	
+### Install DevoxxNFC (all platforms)
+
+On the Raspberry pi:
+
+	cd ~
+	mkdir nfc
+	cd nfc
+	mkdir libs
+	
+
+	scp * pi@192.168.1.206:~/nfc/lib
+
+
+
+
 
 ### Arch linux
 The following applications should be installed on the Raspberry Pi:
@@ -50,7 +87,8 @@ The following applications should be installed on the Raspberry Pi:
 
 	 sudo java -cp lib/LedStrip-1.0.jar:lib/amqp-client-3.1.4.jar:lib/commons-cli-1.2.jar:lib/commons-validator-1.4.0.jar:DevoxxNFC.jar:.:classes:/opt/pi4j/lib/'*' be.pixxis.devoxx.NFCScanner -r 1 -s 172.0.0.1
 	 
-	 sudo java -cp .:DevoxxNFC-1.0-SNAPSHOT.jar:/opt/pi4j/lib/'*':lib/'*' be.pixxis.devoxx.NFCScanner -r 5 -s 1.1.1.1
+		 sudo java -cp .:DevoxxNFC-1.0-SNAPSHOT.jar:/opt/pi4j/lib/'*':lib/'*' be.pixxis.devoxx.NFCScanner -r 5 -s 1.1.1.1
+
 
 	
 

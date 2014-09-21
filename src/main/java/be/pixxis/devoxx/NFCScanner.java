@@ -1,14 +1,9 @@
 package be.pixxis.devoxx;
 
 import be.pixxis.devoxx.animation.MainAnimationThread;
-import be.pixxis.devoxx.messaging.MessageConsumer;
-import be.pixxis.devoxx.messaging.PersistMessageThread;
 import be.pixxis.devoxx.types.Platform;
 import be.pixxis.lpd8806.LedStrip;
 import com.pi4j.wiringpi.Spi;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import org.apache.commons.cli.*;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
@@ -18,7 +13,6 @@ import javax.smartcardio.CardTerminals;
 import javax.smartcardio.TerminalFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,9 +24,6 @@ public class NFCScanner {
 
     public static boolean ANIMATE = false;
     public static boolean DEBUG_MODE = false;
-    public static boolean MESSAGING_ENABLED = false;
-    public static String NFC_PERSISTENT_QUEUE;
-    public static String NFC_QUEUE;
     private static int ROOM_NUMBER;
     private static String SERVER_IP;
 
@@ -80,14 +71,11 @@ public class NFCScanner {
         // Add led animation option
         options.addOption("a", "animation", false, "enable led animation");
 
-        // Add messaging option
-        options.addOption("m", "messaging", false, "enable messaging");
-
         // Add debug option
         options.addOption("d", "debug", false, "enable debug mode");
 
         // Default platform
-        Platform platform = Platform.ARCH;
+        Platform platform = Platform.RASPBIAN;
 
         try {
             // parse the command line arguments
@@ -125,11 +113,6 @@ public class NFCScanner {
                 log("Debug Mode ENABLED.");
             }
 
-            if (line.hasOption("m")) {
-                MESSAGING_ENABLED = true;
-                log("Messaging ENABLED.");
-            }
-
         } catch (UnrecognizedOptionException uoe) {
             System.out.println(uoe.getMessage());
             HelpFormatter formatter = new HelpFormatter();
@@ -155,9 +138,6 @@ public class NFCScanner {
             System.exit(0);
         }
 
-        NFC_PERSISTENT_QUEUE = "nfc_scans_pers_room_" + ROOM_NUMBER;
-        NFC_QUEUE = "nfc_scans_room_" + ROOM_NUMBER;
-
         // Initialize NFC library.
         try {
             initializePcsclite(platform);
@@ -169,12 +149,6 @@ public class NFCScanner {
         //TODO only enable leds in debug mode.
         //TODO Clean up code
         //TODO add logger
-
-        // Initialize Rabbit MQ connection
-        final ConnectionFactory rabbitConnectionFactory = new ConnectionFactory();
-        rabbitConnectionFactory.setHost("localhost");
-        final Connection rabbitConnection;
-        Channel rabbitChannel;
 
 
         // Setup SPI for communication with the led strip.
@@ -204,21 +178,9 @@ public class NFCScanner {
         }
 
         try {
-            if (MESSAGING_ENABLED) {
-                rabbitConnection = rabbitConnectionFactory.newConnection();
-                rabbitChannel = rabbitConnection.createChannel();
-                // Non persistent queue
-                rabbitChannel.queueDeclare(NFC_QUEUE, false, false, false, null);
-
-                // Start a thread to move message from a non persistent queue to a durable que.
-                (new Thread(new PersistMessageThread(rabbitConnection))).start();
-
-                // Start a thread to consume the durable messages.
-                (new Thread(new MessageConsumer(rabbitConnection))).start();
-            }
 
             // Initialize the NFC terminals.
-            TerminalFactory terminalFactory = TerminalFactory.getDefault();
+            final TerminalFactory terminalFactory = TerminalFactory.getDefault();
             log("Terminal factory = " + terminalFactory);
 
             final CardTerminals cardTerminals = terminalFactory.terminals();
@@ -233,11 +195,12 @@ public class NFCScanner {
                     System.exit(0);
                 }
 
+                // Make a list of terminals
                 final List<Terminal> terminals = new ArrayList<Terminal>();
 
                 // Open a channel for every terminal.
                 for (CardTerminal cardTerminal : cardTerminals.list()) {
-                    log(cardTerminal.toString());
+                    log("Initialzing terminal: " + cardTerminal.toString());
                     terminals.add(new Terminal(cardTerminal));
                 }
 
@@ -250,8 +213,6 @@ public class NFCScanner {
                 log("No terminals found! Exit!");
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (CardException e) {
             e.printStackTrace();
         }

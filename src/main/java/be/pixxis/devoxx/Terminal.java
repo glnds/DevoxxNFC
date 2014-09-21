@@ -6,7 +6,7 @@ import javax.smartcardio.*;
 import java.util.HashMap;
 
 /**
- * @author Gert Leenders
+ * @author Gert Leenders (leenders.gert@gmail.com)
  */
 public final class Terminal {
 
@@ -68,7 +68,7 @@ public final class Terminal {
             NFCScanner.log("Terminal for : " + nfcAction + " initialized.");
         }
 
-       // card.disconnect(true);
+       //card.disconnect(true);
     }
 
     public CardTerminal getCardTerminal() {

@@ -4,7 +4,7 @@ import be.pixxis.devoxx.types.NFCAction;
 import be.pixxis.lpd8806.LedStrip;
 
 /**
- * @author Gert Leenders
+ * @author Gert Leenders (leenders.gert@gmail.com)
  */
 public final class MainAnimationThread implements Runnable {
 

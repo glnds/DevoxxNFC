@@ -1,7 +1,7 @@
 package be.pixxis.devoxx.types;
 
 /**
- * @author Gert Leenders
+ * @author Gert Leenders (leenders.gert@gmail.com)
  */
 public enum Platform {
     RASPBIAN,

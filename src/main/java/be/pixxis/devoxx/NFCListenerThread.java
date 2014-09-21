@@ -4,11 +4,13 @@ import be.pixxis.devoxx.animation.AnimateLedStrip;
 import be.pixxis.devoxx.animation.MainAnimationThread;
 import be.pixxis.lpd8806.LedStrip;
 
-import javax.smartcardio.*;
+import javax.smartcardio.CardException;
+import javax.smartcardio.CommandAPDU;
+import javax.smartcardio.ResponseAPDU;
 import java.util.List;
 
 /**
- * Created by glnd on 09/06/14.
+ * @author Gert Leenders (leenders.gert@gmail.com)
  */
 public class NFCListenerThread implements Runnable {
 
@@ -44,21 +46,8 @@ public class NFCListenerThread implements Runnable {
 
             for (Terminal terminal : terminals) {
 
-               // Card card = null;
                 try {
-//                    card = terminal.getCardTerminal().connect("T=0");
-//                    final CardChannel channel = card.getBasicChannel();
-
-                  //  ResponseAPDU response;
-//                    response = channel.transmit(new CommandAPDU(new byte[]{
-//                            (byte) 0xff, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06,  // 122
-//                            (byte) 0xD4, (byte) 0x60,
-//                            (byte) 0x01, (byte) 0x01,
-//                            (byte) 0x00, (byte) 0x20, (byte) 0x40  // MiFare ,ISO/A, DEP
-//                    }));
-
                     response = terminal.getChannel().transmit(commandAPDUMiFare);
-
 
                     byte[] buffer = response.getBytes();
 
@@ -72,13 +61,14 @@ public class NFCListenerThread implements Runnable {
                         final String id = NFCScanner.hex2String(ID);
                         NFCScanner.log("Scanned ID: " + id);
 //
-//                        if (mainAnimationThread2 != null) {
-//                            //mainAnimationThread.suspendUpdates(true);
-//                           mainAnimationThread.setNfcAction(terminal.getNfcAction());
-//                            mainAnimationThread2.interrupt();
-//                        }
+//                        mainAnimationThread.setNfcAction(NFCAction.VOTE_UP);
+//                        mainAnimationThread.interrupt();
 
-
+                        if (mainAnimationThread2 != null) {
+                            //mainAnimationThread.suspendUpdates(true);
+                            mainAnimationThread.setNfcAction(terminal.getNfcAction());
+                            mainAnimationThread2.interrupt();
+                        }
 
 
 //                // Non persistent message
@@ -135,7 +125,7 @@ public class NFCListenerThread implements Runnable {
 //        } catch (IOException ioe) {
 //            ioe.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 //        }
-           }
+            }
 
         }
     }
