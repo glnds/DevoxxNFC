@@ -1,6 +1,6 @@
 package be.pixxis.devoxx;
 
-import be.pixxis.devoxx.animation.MainAnimationThread;
+import be.pixxis.devoxx.animation.AnimationThread;
 import be.pixxis.devoxx.types.Platform;
 import be.pixxis.lpd8806.LedStrip;
 import com.pi4j.wiringpi.Spi;
@@ -26,6 +26,9 @@ public class NFCScanner {
     public static boolean DEBUG_MODE = false;
     private static int ROOM_NUMBER;
     private static String SERVER_IP;
+
+
+
 
     /**
      * @param args the command line arguments
@@ -161,20 +164,20 @@ public class NFCScanner {
 
         // Test proper working of led strip
         final LedStrip ledStrip = new LedStrip(12, 0.5F);
-        try {
-            ledStrip.testStrip();
-        } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+//        try {
+//            ledStrip.testStrip();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//        }
 
         // Start led animation
-        MainAnimationThread mainAnimation = null;
-        Thread mainAnimationThread = null;
+        AnimationThread animation = null;
+        Thread animationThread = null;
         if (!DEBUG_MODE) {
-            mainAnimation = new MainAnimationThread(ledStrip);
-            mainAnimationThread = new Thread(mainAnimation);
-            mainAnimationThread.setPriority(Thread.MIN_PRIORITY);
-            mainAnimationThread.start();
+            animation = new AnimationThread(ledStrip);
+            animationThread = new Thread(animation);
+            animationThread.setPriority(Thread.MIN_PRIORITY);
+            animationThread.start();
         }
 
         try {
@@ -204,8 +207,8 @@ public class NFCScanner {
                     terminals.add(new Terminal(cardTerminal));
                 }
 
-                final NFCListenerThread nfcListener = new NFCListenerThread(terminals, mainAnimation,
-                        new LedStrip(12, 0.5F), mainAnimationThread);
+                final NFCListenerThread nfcListener = new NFCListenerThread(terminals, animation,
+                        animationThread);
                 final Thread nfcListenerThread = new Thread(nfcListener);
                 nfcListenerThread.start();
 

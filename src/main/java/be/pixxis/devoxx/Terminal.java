@@ -25,7 +25,10 @@ public final class Terminal {
         READERS.put("3030303630379000", NFCAction.FAVORITE);
         READERS.put("3030303631379000", NFCAction.VOTE_DOWN);
 
-        // nore needed here...
+        READERS.put("3030303630349000", NFCAction.VOTE_UP);
+        READERS.put("3030313535399000", NFCAction.FAVORITE);
+        READERS.put("3030313534349000", NFCAction.VOTE_DOWN);
+
     }
 
     private final NFCAction nfcAction;
@@ -69,10 +72,6 @@ public final class Terminal {
         }
 
        //card.disconnect(true);
-    }
-
-    public CardTerminal getCardTerminal() {
-        return cardTerminal;
     }
 
     public NFCAction getNfcAction() {

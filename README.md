@@ -39,6 +39,8 @@ On the Raspberry pi:
 	
 
 	scp * pi@192.168.1.206:~/nfc/lib
+	
+ scp DevoxxNFC-1.0-SNAPSHOT.jar pi@192.168.1.206:~/nfc
 
 
 
