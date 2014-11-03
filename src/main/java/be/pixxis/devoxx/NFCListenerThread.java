@@ -46,7 +46,9 @@ public class NFCListenerThread implements Runnable {
 
                     byte[] buffer = response.getBytes();
 
+                    // Card detected?
                     if (buffer[2] == (byte) 0x01) {
+
                         byte[] ID = new byte[4];
                         ID[0] = buffer[10];
                         ID[1] = buffer[11];
@@ -55,23 +57,18 @@ public class NFCListenerThread implements Runnable {
 
                         final String id = NFCScanner.hex2String(ID);
                         NFCScanner.log("Scanned ID: " + id);
-
+                        NFCScanner.log(terminal.getNfcAction().toString());
 
                         if (animation != null) {
-                            //mainAnimationThread.suspendUpdates(true);
                             animation.setNfcAction(terminal.getNfcAction());
-                            NFCScanner.log(terminal.getNfcAction().toString());
                             animationThread.interrupt();
                         }
 
                         Thread.sleep(200);
-
-                    } else {
-                        // No card detected
                     }
 
                 } catch (InterruptedException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    e.printStackTrace();
                     System.exit(0);
                 } catch (CardException e) {
                     e.printStackTrace();

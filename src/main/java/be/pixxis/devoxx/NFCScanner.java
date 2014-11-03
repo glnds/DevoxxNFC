@@ -27,9 +27,6 @@ public class NFCScanner {
     private static int ROOM_NUMBER;
     private static String SERVER_IP;
 
-
-
-
     /**
      * @param args the command line arguments
      */
@@ -149,8 +146,8 @@ public class NFCScanner {
             System.exit(0);
         }
 
-        //TODO only enable leds in debug mode.
-        //TODO Clean up code
+        //TODO disable leds in debug mode
+
         //TODO add logger
 
 
@@ -164,11 +161,11 @@ public class NFCScanner {
 
         // Test proper working of led strip
         final LedStrip ledStrip = new LedStrip(12, 0.5F);
-//        try {
-//            ledStrip.testStrip();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//        }
+        try {
+            ledStrip.testStrip();
+        } catch (InterruptedException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
 
         // Start led animation
         AnimationThread animation = null;

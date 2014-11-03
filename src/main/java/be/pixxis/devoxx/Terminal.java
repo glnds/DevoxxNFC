@@ -29,6 +29,10 @@ public final class Terminal {
         READERS.put("3030313535399000", NFCAction.FAVORITE);
         READERS.put("3030313534349000", NFCAction.VOTE_DOWN);
 
+        READERS.put("3030303634379000", NFCAction.VOTE_UP);
+        READERS.put("3030323535339000", NFCAction.FAVORITE);
+        READERS.put("3030323533369000", NFCAction.VOTE_DOWN);
+
     }
 
     private final NFCAction nfcAction;
