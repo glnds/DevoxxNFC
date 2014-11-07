@@ -1,6 +1,6 @@
 package be.pixxis.devoxx;
 
-import be.pixxis.devoxx.animation.AnimationThread;
+import be.pixxis.devoxx.animation.Animation;
 
 import javax.smartcardio.CardException;
 import javax.smartcardio.CommandAPDU;
@@ -13,7 +13,7 @@ import java.util.List;
 public class NFCListenerThread implements Runnable {
 
     private final List<Terminal> terminals;
-    private final AnimationThread animation;
+    private final Animation animation;
     private final Thread animationThread;
 
 
@@ -24,7 +24,7 @@ public class NFCListenerThread implements Runnable {
             (byte) 0x00, (byte) 0x20  // MiFare ,ISO/A, DEP
     });
 
-    public NFCListenerThread(final List<Terminal> terminals, final AnimationThread animation,
+    public NFCListenerThread(final List<Terminal> terminals, final Animation animation,
                              Thread animationThread) {
 
         this.terminals = terminals;
@@ -60,11 +60,10 @@ public class NFCListenerThread implements Runnable {
                         NFCScanner.log(terminal.getNfcAction().toString());
 
                         if (animation != null) {
-                            animation.setNfcAction(terminal.getNfcAction());
-                            animationThread.interrupt();
+                            animation.scanAnimation(terminal.getNfcAction());
                         }
 
-                        Thread.sleep(200);
+                        Thread.sleep(50);
                     }
 
                 } catch (InterruptedException e) {

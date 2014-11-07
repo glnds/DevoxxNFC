@@ -1,6 +1,6 @@
 package be.pixxis.devoxx;
 
-import be.pixxis.devoxx.animation.AnimationThread;
+import be.pixxis.devoxx.animation.Animation;
 import be.pixxis.devoxx.types.Platform;
 import be.pixxis.lpd8806.LedStrip;
 import com.pi4j.wiringpi.Spi;
@@ -168,13 +168,11 @@ public class NFCScanner {
         }
 
         // Start led animation
-        AnimationThread animation = null;
+        Animation animation = null;
         Thread animationThread = null;
         if (!DEBUG_MODE) {
-            animation = new AnimationThread(ledStrip);
-            animationThread = new Thread(animation);
-            animationThread.setPriority(Thread.MIN_PRIORITY);
-            animationThread.start();
+            animation = new Animation(ledStrip);
+            animation.idle();
         }
 
         try {
