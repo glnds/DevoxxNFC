@@ -24,8 +24,8 @@ public class NFCScanner {
 
     public static boolean ANIMATE = false;
     public static boolean DEBUG_MODE = false;
-    private static int ROOM_NUMBER;
-    private static String SERVER_IP;
+    public static int ROOM_NUMBER;
+    public static String SERVER_IP;
 
     /**
      * @param args the command line arguments
@@ -169,7 +169,6 @@ public class NFCScanner {
 
         // Start led animation
         Animation animation = null;
-        Thread animationThread = null;
         if (!DEBUG_MODE) {
             animation = new Animation(ledStrip);
             animation.idle();
@@ -202,8 +201,7 @@ public class NFCScanner {
                     terminals.add(new Terminal(cardTerminal));
                 }
 
-                final NFCListenerThread nfcListener = new NFCListenerThread(terminals, animation,
-                        animationThread);
+                final NFCListenerThread nfcListener = new NFCListenerThread(terminals, animation);
                 final Thread nfcListenerThread = new Thread(nfcListener);
                 nfcListenerThread.start();
 

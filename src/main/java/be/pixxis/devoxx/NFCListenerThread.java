@@ -14,7 +14,6 @@ public class NFCListenerThread implements Runnable {
 
     private final List<Terminal> terminals;
     private final Animation animation;
-    private final Thread animationThread;
 
 
     private static CommandAPDU commandAPDUMiFare = new CommandAPDU(new byte[]{
@@ -24,12 +23,10 @@ public class NFCListenerThread implements Runnable {
             (byte) 0x00, (byte) 0x20  // MiFare ,ISO/A, DEP
     });
 
-    public NFCListenerThread(final List<Terminal> terminals, final Animation animation,
-                             Thread animationThread) {
+    public NFCListenerThread(final List<Terminal> terminals, final Animation animation) {
 
         this.terminals = terminals;
         this.animation = animation;
-        this.animationThread = animationThread;
     }
 
     @Override
@@ -62,6 +59,8 @@ public class NFCListenerThread implements Runnable {
                         if (animation != null) {
                             animation.scanAnimation(terminal.getNfcAction());
                         }
+
+                        RestClient.post(terminal.getNfcAction(), id);
 
                         Thread.sleep(50);
                     }
